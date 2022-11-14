@@ -1,0 +1,85 @@
+{
+  "pluginAlias": "Nuheat",
+  "pluginType": "platform",
+  "singular": false,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "NuHeat"
+      },
+      "email": {
+        "title": "email",
+        "type": "string",
+        "required": true,
+        "format": "email"
+      },
+      "password": {
+        "title": "password",
+        "type": "string",
+        "required": true
+      },
+      "devices": {
+        "title": "Devices",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "serialNumber": {
+              "title": "Serial Number",
+              "type": "string",
+              "required": true
+            },
+            "disabled": {
+              "title": "Disabled",
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "autoPopulateAwayModeSwitches": {
+        "title": "Auto populate Away Mode switches for all available groups",
+        "type": "boolean"
+      },
+      "groups": {
+        "title": "Groups",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "groupName": {
+              "title": "Group Name",
+              "type": "string",
+              "required": true
+            },
+            "disabled": {
+              "title": "Disabled",
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "holdLength": {
+        "title": "Hold Length (in minutes)",
+        "type": "integer",
+        "description": "If set to 0, set point changes will hold until the next scheduled event. If set to 1440 (default), set point changes will be permanent. Set to any value in between for a timed hold.",
+        "placeholder": 1440
+      },
+      "refresh": {
+        "title": "Refresh Interval (in seconds)",
+        "type": "integer",
+        "placeholder": 60,
+        "minimum": 1
+      },
+      "debug": {
+        "title": "Enable debug logs",
+        "type": "boolean"
+      }
+    }
+  },
+  "form": null,
+  "display": null
+}
