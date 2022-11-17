@@ -10,7 +10,7 @@ module.exports = function (homebridge) {
     Characteristic = homebridge.hap.Characteristic;
     Service = homebridge.hap.Service;
     UUIDGen = homebridge.hap.uuid;
-    homebridge.registerPlatform('homebridge-NuHeat', 'NuHeat', NuHeatPlatform, true);
+    homebridge.registerPlatform('homebridge-nuheat', 'NuHeat', NuHeatPlatform, true);
 };
  
 class NuHeatPlatform {
@@ -76,7 +76,7 @@ class NuHeatPlatform {
                                 this.log("Creating new away mode switch for group: " + deviceData.groupName);
                                 let accessory = new PlatformAccessory(deviceData.groupName, uuid);
                                 let deviceService = accessory.addService(Service.Switch, deviceData.groupName + " Away Mode");
-                                this.api.registerPlatformAccessories("homebridge-NuHeat", "NuHeat", [accessory]);
+                                this.api.registerPlatformAccessories("homebridge-nuheat", "NuHeat", [accessory]);
                                 deviceAccessory = accessory;
                                 this.accessories.push({uuid: uuid});
                             }
@@ -112,7 +112,7 @@ class NuHeatPlatform {
                             this.log("Creating new thermostat for serial number: " + deviceData.serialNumber);
                             let accessory = new PlatformAccessory(deviceData.name, uuid);
                             let deviceService = accessory.addService(Service.Thermostat, deviceData.name);
-                            this.api.registerPlatformAccessories("homebridge-NuHeat", "NuHeat", [accessory]);
+                            this.api.registerPlatformAccessories("homebridge-nuheat", "NuHeat", [accessory]);
                             deviceAccessory = accessory;
                             this.accessories.push({uuid: uuid});
                         }
