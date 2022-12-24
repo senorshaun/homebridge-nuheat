@@ -3,6 +3,7 @@ let NuHeatAPI = require('./lib/NuHeatAPI.js');
 let NuHeatGroup = require('./lib/NuHeatGroup.js');
 let NuHeatThermostat = require('./lib/NuHeatThermostat.js');
 let NuHeatListener = require('./lib/NuHeatListener.js');
+const logger = require("./lib/logger");
 let Homebridge, PlatformAccessory, Service, Characteristic, UUIDGen;
 module.exports = function (homebridge) {
     Homebridge = homebridge;
@@ -29,18 +30,17 @@ class NuHeatPlatform {
         this.config = config;
         this.config.email = this.config.Email || this.config.email;
         this.config.holdLength = Math.min(1440, Math.max(0, this.config.holdLength || 1440));
-        this.config.debug = this.config.debug || false;
         this.api = api;
         this.accessories = [];
-        this.log = log;
+        this.log = new logger.Logger(log, this.config.debug || false);
         this.setupPlatform();
     }
     configureAccessory(accessory) {
         this.accessories.push({uuid: accessory.UUID, accessory: accessory});
     }
     async setupPlatform() {
-        this.log("Logging into NuHeat...");
-        this.NuHeatAPI = new NuHeatAPI(this.config.email, this.config.password, this.log, this.config.debug);
+        this.log.info("Logging into NuHeat...");
+        this.NuHeatAPI = new NuHeatAPI(this.config.email, this.config.password, this.log);
         await this.NuHeatAPI.acquireAccessToken();
         await this.setupGroups();
         await this.setupThermostats();
@@ -62,7 +62,7 @@ class NuHeatPlatform {
                 this.log.error("Error getting data from NuHeatAPI");
             } else {
                 if (groupArray.length == 0) {
-                    this.log("No groups defined in config. Auto populating away mode wwitches by pulling all groups from the account.")
+                    this.log.info("No groups defined in config. Auto populating away mode wwitches by pulling all groups from the account.")
                 }
                 await Promise.all(
                     response.map((deviceData) => {
@@ -73,16 +73,16 @@ class NuHeatPlatform {
                                 deviceAccessory = this.accessories.find(accessory => accessory.uuid === uuid).accessory;
                             }
                             if (!deviceAccessory) {
-                                this.log("Creating new away mode switch for group: " + deviceData.groupName);
+                                this.log.info("Creating new away mode switch", deviceData.groupName);
                                 let accessory = new PlatformAccessory(deviceData.groupName, uuid);
                                 let deviceService = accessory.addService(Service.Switch, deviceData.groupName + " Away Mode");
                                 this.api.registerPlatformAccessories("homebridge-nuheat", "NuHeat", [accessory]);
                                 deviceAccessory = accessory;
                                 this.accessories.push({uuid: uuid});
                             }
-                            this.accessories.find(accessory => accessory.uuid === uuid).accessory = new NuHeatGroup(this.log, deviceData, this.config.debug, (deviceAccessory instanceof NuHeatGroup ? deviceAccessory.accessory : deviceAccessory), this.NuHeatAPI, Homebridge);
+                            this.accessories.find(accessory => accessory.uuid === uuid).accessory = new NuHeatGroup(this.log, deviceData, (deviceAccessory instanceof NuHeatGroup ? deviceAccessory.accessory : deviceAccessory), this.NuHeatAPI, Homebridge);
                             this.accessories.find(accessory => accessory.uuid === uuid).existsInConfig = true;
-                            this.log("Loaded group", deviceData.groupName, "as away mode switch");
+                            this.log.info("Loaded away mode switch", deviceData.groupName);
                             this.accessories.find(accessory => accessory.uuid === uuid).accessory.updateValues(deviceData);
                         }
                     })
@@ -98,7 +98,7 @@ class NuHeatPlatform {
             this.log.error("Error getting data from NuHeatAPI");
         } else {
             if (deviceArray.length == 0) {
-                this.log("No devices defined in config. Auto populating thermostats by pulling everything from the account.")
+                this.log.info("No devices defined in config. Auto populating thermostats by pulling everything from the account.")
             }
             await Promise.all(
                 response.map((deviceData) => {
@@ -109,16 +109,16 @@ class NuHeatPlatform {
                             deviceAccessory = this.accessories.find(accessory => accessory.uuid === uuid).accessory;
                         }
                         if (!deviceAccessory) {
-                            this.log("Creating new thermostat for serial number: " + deviceData.serialNumber);
+                            this.log.info("Creating new thermostat for serial number: " + deviceData.serialNumber);
                             let accessory = new PlatformAccessory(deviceData.name, uuid);
                             let deviceService = accessory.addService(Service.Thermostat, deviceData.name);
                             this.api.registerPlatformAccessories("homebridge-nuheat", "NuHeat", [accessory]);
                             deviceAccessory = accessory;
                             this.accessories.push({uuid: uuid});
                         }
-                        this.accessories.find(accessory => accessory.uuid === uuid).accessory = new NuHeatThermostat(this.log, deviceData, this.config.debug, this.config.holdLength, (deviceAccessory instanceof NuHeatThermostat ? deviceAccessory.accessory : deviceAccessory), this.NuHeatAPI, Homebridge);
+                        this.accessories.find(accessory => accessory.uuid === uuid).accessory = new NuHeatThermostat(this.log, deviceData, this.config.holdLength, (deviceAccessory instanceof NuHeatThermostat ? deviceAccessory.accessory : deviceAccessory), this.NuHeatAPI, Homebridge);
                         this.accessories.find(accessory => accessory.uuid === uuid).existsInConfig = true;
-                        this.log("Loaded thermostat", deviceData.serialNumber, deviceData.name);
+                        this.log.info("Loaded thermostat " + deviceData.serialNumber + " " +deviceData.name);
                         this.accessories.find(accessory => accessory.uuid ===uuid).accessory.updateValues(deviceData);
                     }
                 })
@@ -131,9 +131,9 @@ class NuHeatPlatform {
         this.accessories.forEach(function(thisAccessory) {
             if (thisAccessory.existsInConfig !== true) {
                 try {
-                    this.log("Deleting removed accessory", thisAccessory.accessory.getService(Service.AccessoryInformation).getCharacteristic(Characteristic.Name).getValue());
+                    this.log.info("Deleting removed accessory", thisAccessory.accessory.getService(Service.AccessoryInformation).getCharacteristic(Characteristic.Name).getValue());
                 } catch {
-                    this.log("Deleting removed accessory");
+                    this.log.info("Deleting removed accessory");
                 }
                 this.api.unregisterPlatformAccessories(undefined, undefined, [thisAccessory.accessory]);
                
@@ -147,9 +147,7 @@ class NuHeatPlatform {
     }
  
     async refreshGroups() {
-        if (this.config.debug) {
-            this.log("Trying to refresh groups.");
-        }
+        this.log.debug("Trying to refresh groups.");
         let response = await this.NuHeatAPI.refreshGroups();
         if (!response) {
             this.log.error("Error getting data from NuHeatAPI in group refresh");
@@ -164,9 +162,7 @@ class NuHeatPlatform {
     }
  
     async refreshTheromstats() {
-        if (this.config.debug) {
-            this.log("Trying to refresh thermostats.");
-        }
+        this.log.debug("Trying to refresh thermostats.");
         let response = await this.NuHeatAPI.refreshThermostats();
         if (!response) {
             this.log.error("Error getting data from NuHeatAPI in thermostat refresh");

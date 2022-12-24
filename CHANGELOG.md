@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project should be documented in this file
 
+## [1.1.2] - 2022-12-24
+### Fixed
+ - some unhandled api auth error
+### Changed
+ - some debug logging code
+
+
 ## [1.1.1] - 2022-11-17
 ### Fixed
  - changed the 'homebridge-nuheat' name to be lower case so HOOBS handles properly
