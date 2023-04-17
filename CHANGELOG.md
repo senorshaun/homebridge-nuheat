@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project should be documented in this file
 
+## [1.1.3] - 2023-04-17
+### Fixed
+ - typo in away mode
+
 ## [1.1.2] - 2022-12-24
 ### Fixed
  - some unhandled api auth error
