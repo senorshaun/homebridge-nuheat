@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project should be documented in this file
 
+## [1.1.4] - 2023-05-12
+### Changed
+ - error handling when unable to get access token, as to not crash homebridge
+
 ## [1.1.3] - 2023-04-17
 ### Fixed
  - typo in away mode

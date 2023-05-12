@@ -41,16 +41,23 @@ class NuHeatPlatform {
     async setupPlatform() {
         this.log.info("Logging into NuHeat...");
         this.NuHeatAPI = new NuHeatAPI(this.config.email, this.config.password, this.log);
-        await this.NuHeatAPI.acquireAccessToken();
-        await this.setupGroups();
-        await this.setupThermostats();
-        this.cleanupRemovedAccessories();
-        setInterval(this.refreshAccessories.bind(this), (this.config.refresh || 60) * 1000);
-        this.NuHeatListener = new NuHeatListener(await this.NuHeatAPI.returnAccessToken(), this);
-        this.NuHeatListener.connect();
-        //Disconnect cleaning when homebridge is shutting down
-        process.on("SIGINT", function() {this.NuHeatListener.disconnect()}.bind(this));
-        process.on("SIGTERM", function() {this.NuHeatListener.disconnect()}.bind(this));
+        if (await this.NuHeatAPI.acquireAccessToken()) {
+            await this.setupGroups();
+            await this.setupThermostats();
+            this.cleanupRemovedAccessories();
+            setInterval(this.refreshAccessories.bind(this), (this.config.refresh || 60) * 1000);
+            this.NuHeatListener = new NuHeatListener(await this.NuHeatAPI.returnAccessToken(), this);
+            this.NuHeatListener.connect();
+            //Disconnect cleaning when homebridge is shutting down
+            process.on("SIGINT", function() {this.NuHeatListener.disconnect()}.bind(this));
+            process.on("SIGTERM", function() {this.NuHeatListener.disconnect()}.bind(this));
+        } else {
+            this.log.error("Unable to acquire an access token. We will try again later.")
+            setTimeout(this.setupPlatform.bind(this), (this.config.refresh || 60) * 1000);
+        }
+        
+
+        
     }
  
     async setupGroups() {
