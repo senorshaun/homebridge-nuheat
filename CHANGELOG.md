@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project should be documented in this file
 
+## [1.2.0] - 2023-05-26
+### Changed
+ - client secret for api auth
+
+### Fixed
+ - async updates from the api to reduce cookie creation
+
 ## [1.1.4] - 2023-05-12
 ### Changed
  - error handling when unable to get access token, as to not crash homebridge
@@ -14,7 +21,6 @@ All notable changes to this project should be documented in this file
  - some unhandled api auth error
 ### Changed
  - some debug logging code
-
 
 ## [1.1.1] - 2022-11-17
 ### Fixed

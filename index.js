@@ -148,9 +148,9 @@ class NuHeatPlatform {
         },this);
     }
  
-    refreshAccessories() {
-        this.refreshGroups();
-        this.refreshTheromstats();
+    async refreshAccessories() {
+       await this.refreshGroups();
+       await this.refreshTheromstats();
     }
  
     async refreshGroups() {
@@ -158,6 +158,7 @@ class NuHeatPlatform {
         let response = await this.NuHeatAPI.refreshGroups();
         if (!response) {
             this.log.error("Error getting data from NuHeatAPI in group refresh");
+            return false;
         } else {
                 response.forEach(function(deviceData) {
                     let thisAccessory = this.accessories.find(accessory => accessory.uuid === UUIDGen.generate(deviceData.groupId.toString()));
@@ -165,6 +166,7 @@ class NuHeatPlatform {
                         thisAccessory.accessory.updateValues(deviceData);
                     }
                 }, this);
+                return true;
         }
     }
  
@@ -173,6 +175,7 @@ class NuHeatPlatform {
         let response = await this.NuHeatAPI.refreshThermostats();
         if (!response) {
             this.log.error("Error getting data from NuHeatAPI in thermostat refresh");
+            return false;
         } else {
             response.forEach(function(deviceData) {
                 let thisAccessory = this.accessories.find(accessory => accessory.uuid === UUIDGen.generate(deviceData.serialNumber.toString()));
@@ -180,6 +183,7 @@ class NuHeatPlatform {
                     thisAccessory.accessory.updateValues(deviceData);
                 }
             }, this);
+            return true;
         }
     }
 }
