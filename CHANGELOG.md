@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project should be documented in this file
 
+## [1.2.1] - 2023-06-01
+### Fixed
+ - hold length bug
+
 ## [1.2.0] - 2023-05-26
 ### Changed
  - client secret for api auth

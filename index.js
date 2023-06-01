@@ -41,7 +41,7 @@ class NuHeatPlatform {
     async setupPlatform() {
         this.log.info("Logging into NuHeat...");
         this.NuHeatAPI = new NuHeatAPI(this.config.email, this.config.password, this.log);
-        if (await this.NuHeatAPI.acquireAccessToken()) {
+        if (await this.NuHeatAPI.returnAccessToken()) {
             await this.setupGroups();
             await this.setupThermostats();
             this.cleanupRemovedAccessories();
@@ -54,10 +54,7 @@ class NuHeatPlatform {
         } else {
             this.log.error("Unable to acquire an access token. We will try again later.")
             setTimeout(this.setupPlatform.bind(this), (this.config.refresh || 60) * 1000);
-        }
-        
-
-        
+        }  
     }
  
     async setupGroups() {
