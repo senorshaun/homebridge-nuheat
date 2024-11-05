@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project should be documented in this file
 
+## [1.2.3] - 2024-11-04
+### Fixed
+ - Bug when using away mode switches
+
 ## [1.2.2] - 2023-06-13
 ### Fixed
  - variable typo
